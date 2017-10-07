@@ -1,0 +1,6 @@
+﻿@model EPiServer.Commerce.Order.IPaymentOption
+@Html.HiddenFor(model => model.PaymentMethodId)
+<div id='PaymentCoinify'>
+    <img src="https://news.coinify.com/wp-content/uploads/2015/06/coinify-textblack.png" />
+    <span class="text-error">@ViewBag.Message</span>
+</div>

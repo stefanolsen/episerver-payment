@@ -1,0 +1,27 @@
+﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<languages>
+  <language name="English" id="en">
+    <Commerce>
+      <Checkout>
+        <Coinify>
+          <PaymentNotSpecified>Payment information is not specified.</PaymentNotSpecified>
+          <PaymentNotAssociatedOrderGroup>Payment must be associated with an order group.</PaymentNotAssociatedOrderGroup>
+          <PaymentNotAssociatedOrderForm>Payment must be associated with an order form.</PaymentNotAssociatedOrderForm>
+
+          <CancelMessage>Transaction was cancelled by Coinify.</CancelMessage>
+          <ProcessPaymentNullHttpContext>HttpContext.Current is null.</ProcessPaymentNullHttpContext>
+          <ProcessPaymentStatusCompleted>This shopping cart has been paid already on Coinify.</ProcessPaymentStatusCompleted>
+          <NotEnoughStockWarning>Payment completed but not enough stock. Please contact administrators.</NotEnoughStockWarning>
+          <CartValidationWarning>An error occurred when processing cart.</CartValidationWarning>
+          <CommitTranErrorInvalidReturn>Data returned from Coinify did not match the specified cart.</CommitTranErrorInvalidReturn>
+          <CommitTranErrorCartNull>Cart is null while processing successful transaction redirected back from Coinify</CommitTranErrorCartNull>
+          <CommitTranErrorGetInvoice>Cannot call Coinify API to get invoice</CommitTranErrorGetInvoice>
+          <CommitTranErrorCreateInvoice>Cannot call Coinify API to create invoice</CommitTranErrorCreateInvoice>
+          <CommitTranErrorCartReset>Cart is reset while processing Coinify transaction</CommitTranErrorCartReset>
+          <PaymentCancelMessage>Your payment is cancelled or expired. Please try again or choose another payment method</PaymentCancelMessage>
+          <CoinifyAPICallError>Unknown error while calling Coinify API.</CoinifyAPICallError>
+        </Coinify>
+      </Checkout>
+    </Commerce>
+  </language>
+</languages>
