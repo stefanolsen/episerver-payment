@@ -58,13 +58,13 @@ namespace StefanOlsen.Commerce.Payment.Coinify.Manager
 
             var paymentMethodId = _paymentMethodDto.PaymentMethod.Count > 0 ? _paymentMethodDto.PaymentMethod[0].PaymentMethodId : Guid.Empty;
 
-            UpdateOrCreateParameter(CoinifyConfiguration.ParameterNameApiKey, ApiKey, paymentMethodId);
-            UpdateOrCreateParameter(CoinifyConfiguration.ParameterNameApiSecret, ApiSecret, paymentMethodId);
-            UpdateOrCreateParameter(CoinifyConfiguration.ParameterNameHashSecret, HashSecret, paymentMethodId);
-            UpdateOrCreateParameter(CoinifyConfiguration.ParameterNameSandboxMode, SandboxMode, paymentMethodId);
-            UpdateOrCreateParameter(CoinifyConfiguration.ParameterNameCancelUrl, CancelUrl, paymentMethodId);
-            UpdateOrCreateParameter(CoinifyConfiguration.ParameterNameReturnUrl, ReturnUrl, paymentMethodId);
-            UpdateOrCreateParameter(CoinifyConfiguration.ParameterNameSuccessUrl, SuccessUrl, paymentMethodId);
+            UpdateOrCreateParameter(Constants.SettingsKeyApiKey, ApiKey, paymentMethodId);
+            UpdateOrCreateParameter(Constants.SettingsKeyApiSecret, ApiSecret, paymentMethodId);
+            UpdateOrCreateParameter(Constants.SettingsKeyHashSecret, HashSecret, paymentMethodId);
+            UpdateOrCreateParameter(Constants.SettingsKeySandboxMode, SandboxMode, paymentMethodId);
+            UpdateOrCreateParameter(Constants.SettingsKeyCancelUrl, CancelUrl, paymentMethodId);
+            UpdateOrCreateParameter(Constants.SettingsKeyReturnUrl, ReturnUrl, paymentMethodId);
+            UpdateOrCreateParameter(Constants.SettingsKeySuccessUrl, SuccessUrl, paymentMethodId);
         }
 
         /// <summary>
@@ -78,13 +78,13 @@ namespace StefanOlsen.Commerce.Payment.Coinify.Manager
                 return;
             }
 
-            BindParameterData(CoinifyConfiguration.ParameterNameApiKey, ApiKey);
-            BindParameterData(CoinifyConfiguration.ParameterNameApiSecret, ApiSecret);
-            BindParameterData(CoinifyConfiguration.ParameterNameHashSecret, HashSecret);
-            BindParameterData(CoinifyConfiguration.ParameterNameSandboxMode, SandboxMode);
-            BindParameterData(CoinifyConfiguration.ParameterNameCancelUrl, CancelUrl);
-            BindParameterData(CoinifyConfiguration.ParameterNameReturnUrl, ReturnUrl);
-            BindParameterData(CoinifyConfiguration.ParameterNameSuccessUrl, SuccessUrl);
+            BindParameterData(Constants.SettingsKeyApiKey, ApiKey);
+            BindParameterData(Constants.SettingsKeyApiSecret, ApiSecret);
+            BindParameterData(Constants.SettingsKeyHashSecret, HashSecret);
+            BindParameterData(Constants.SettingsKeySandboxMode, SandboxMode);
+            BindParameterData(Constants.SettingsKeyCancelUrl, CancelUrl);
+            BindParameterData(Constants.SettingsKeyReturnUrl, ReturnUrl);
+            BindParameterData(Constants.SettingsKeySuccessUrl, SuccessUrl);
         }
 
         private void UpdateOrCreateParameter(string parameterName, CheckBox parameterControl, Guid paymentMethodId)
@@ -114,7 +114,7 @@ namespace StefanOlsen.Commerce.Payment.Coinify.Manager
             }
         }
 
-        private void BindParameterData(string parameterName, CheckBox parameterControl)
+        private void BindParameterData(string parameterName, ICheckBoxControl parameterControl)
         {
             var parameterByName = GetParameterByName(parameterName);
             if (parameterByName == null)
@@ -125,7 +125,7 @@ namespace StefanOlsen.Commerce.Payment.Coinify.Manager
             parameterControl.Checked = bool.TryParse(parameterByName.Value, out bool isChecked) && isChecked;
         }
 
-        private void BindParameterData(string parameterName, TextBox parameterControl)
+        private void BindParameterData(string parameterName, ITextControl parameterControl)
         {
             var parameterByName = GetParameterByName(parameterName);
             if (parameterByName == null)
@@ -138,7 +138,14 @@ namespace StefanOlsen.Commerce.Payment.Coinify.Manager
 
         private PaymentMethodDto.PaymentMethodParameterRow GetParameterByName(string name)
         {
-            return CoinifyConfiguration.GetParameterByName(_paymentMethodDto, name);
+            return GetParameterByName(_paymentMethodDto, name);
+        }
+
+        public static PaymentMethodDto.PaymentMethodParameterRow GetParameterByName(PaymentMethodDto paymentMethodDto, string parameterName)
+        {
+            var rowArray = (PaymentMethodDto.PaymentMethodParameterRow[])paymentMethodDto.PaymentMethodParameter.Select(string.Format("Parameter = '{0}'", parameterName));
+
+            return rowArray.Length > 0 ? rowArray[0] : null;
         }
     }
 }

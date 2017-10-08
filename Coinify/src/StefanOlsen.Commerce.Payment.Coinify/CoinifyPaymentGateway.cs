@@ -19,31 +19,24 @@ namespace StefanOlsen.Commerce.Payment.Coinify
         private readonly ILogger _logger;
         private readonly IInventoryProcessor _inventoryProcessor;
         private readonly IOrderRepository _orderRepository;
-        private readonly CoinifyClient _coinifyClient;
-        private readonly CoinifyConfiguration _coinifyConfiguration;
+        private CoinifyConfiguration _coinifyConfiguration;
 
         public CoinifyPaymentGateway()
             : this(
                   ServiceLocator.Current.GetInstance<ILogger>(),
                   ServiceLocator.Current.GetInstance<IInventoryProcessor>(),
-                  ServiceLocator.Current.GetInstance<IOrderNumberGenerator>(),
                   ServiceLocator.Current.GetInstance<IOrderRepository>())
         {
-
         }
 
         public CoinifyPaymentGateway(
             ILogger logger,
             IInventoryProcessor inventoryProcessor,
-            IOrderNumberGenerator orderNumberGenerator,
             IOrderRepository orderRepository)
         {
             _logger = logger;
             _inventoryProcessor = inventoryProcessor;
             _orderRepository = orderRepository;
-
-            _coinifyConfiguration = new CoinifyConfiguration();
-            _coinifyClient = new CoinifyClient(_coinifyConfiguration);
         }
 
         public IDictionary<string, string> Settings { get; set; }
@@ -66,6 +59,7 @@ namespace StefanOlsen.Commerce.Payment.Coinify
                 return PaymentProcessingResult.CreateUnsuccessfulResult(Utilities.Translate("PaymentNotAssociatedOrderForm"));
             }
 
+            _coinifyConfiguration = new CoinifyConfiguration(Settings);
             var httpRequest = HttpContext.Current.Request;
 
             if (orderGroup is IPurchaseOrder purchaseOrder)
@@ -120,7 +114,8 @@ namespace StefanOlsen.Commerce.Payment.Coinify
             }
 
             long invoiceId = (long)payment.Properties[Constants.MetaFieldCoinifyPaymentInvoiceId];
-            var invoice = _coinifyClient.InvoiceGet(invoiceId);
+            var coinifyClient = new CoinifyClient(_coinifyConfiguration);
+            var invoice = coinifyClient.InvoiceGet(invoiceId);
             if (invoice == null)
             {
                 return PaymentProcessingResult.CreateUnsuccessfulResult(Utilities.Translate("CommitTranErrorInvalidReturn"));
@@ -137,14 +132,14 @@ namespace StefanOlsen.Commerce.Payment.Coinify
                 case InvoiceState.Complete:
                 case InvoiceState.Paid:
                     _logger.Information("Payment completed. About to process successful transaction.");
-                    return ProcessSuccessfulTransaction(cart, payment, invoice);
+                    return ProcessSuccessfulTransaction(cart, payment);
                 default:
                     _logger.Information("Payment has expired.");
                     return ProcessUnsuccessfulTransaction(Utilities.Translate("CancelMessage"));
             }
         }
 
-        public PaymentProcessingResult ProcessSuccessfulTransaction(IOrderGroup orderGroup, IPayment payment, Invoice invoice)
+        private PaymentProcessingResult ProcessSuccessfulTransaction(IOrderGroup orderGroup, IPayment payment)
         {
             var cart = orderGroup as ICart;
             if (cart == null)
@@ -175,7 +170,7 @@ namespace StefanOlsen.Commerce.Payment.Coinify
             }
         }
 
-        public PaymentProcessingResult ProcessUnsuccessfulTransaction(string errorMessage)
+        private PaymentProcessingResult ProcessUnsuccessfulTransaction(string errorMessage)
         {
             string cancelUrl = _coinifyConfiguration.CancelUrl;
 
@@ -186,7 +181,8 @@ namespace StefanOlsen.Commerce.Payment.Coinify
         private PaymentProcessingResult ProcessPaymentCheckout(ICart cart, IPayment payment)
         {
             var invoiceRequest = CreateInvoiceRequest(cart, payment);
-            Invoice invoice = _coinifyClient.InvoiceCreate(invoiceRequest);
+            var coinifyClient = new CoinifyClient(_coinifyConfiguration);
+            Invoice invoice = coinifyClient.InvoiceCreate(invoiceRequest);
             if (invoice == null)
             {
                 return PaymentProcessingResult.CreateUnsuccessfulResult("No invoice created.");
@@ -276,7 +272,7 @@ namespace StefanOlsen.Commerce.Payment.Coinify
             string returnUrl = _coinifyConfiguration.ReturnUrl;
 
             int orderGroupId = cart.OrderLink.OrderGroupId;
-            cancelUrl = UriSupport.AddQueryString(returnUrl, "hash", Utilities.GetHMAC(_coinifyConfiguration.HashSecret, $"{orderGroupId}_cancel"));
+            cancelUrl = UriSupport.AddQueryString(cancelUrl, "hash", Utilities.GetHMAC(_coinifyConfiguration.HashSecret, $"{orderGroupId}_cancel"));
             returnUrl = UriSupport.AddQueryString(returnUrl, "hash", Utilities.GetHMAC(_coinifyConfiguration.HashSecret, $"{orderGroupId}_return"));
 
             request.CancelUrl = UriSupport.AbsoluteUrlBySettings(cancelUrl);
@@ -308,12 +304,11 @@ namespace StefanOlsen.Commerce.Payment.Coinify
             }
         }
 
-        private void UpdateTransactionIdOfPaymentMethod(IPurchaseOrder purchaseOrder, string paymentGatewayTransactionId)
+        private static void UpdateTransactionIdOfPaymentMethod(IPurchaseOrder purchaseOrder, string paymentGatewayTransactionId)
         {
-            // loop through all payments in the PurchaseOrder, find payment with id equal guidPaymentMethodId, set TransactionId
             foreach (var payment in purchaseOrder.Forms
                 .SelectMany(form => form.Payments)
-                .Where(payment => payment.PaymentMethodId.Equals(_coinifyConfiguration.PaymentMethodId)))
+                .OfType<CoinifyPayment>())
             {
                 payment.TransactionID = paymentGatewayTransactionId;
                 payment.ProviderTransactionID = paymentGatewayTransactionId;

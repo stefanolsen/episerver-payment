@@ -206,7 +206,6 @@
     <Compile Include="CoinifyConfiguration.cs" />
     <Compile Include="CoinifyPayment.cs" />
     <Compile Include="CoinifyPaymentGateway.cs" />
-    <Compile Include="CoinifyPaymentOption.cs" />
     <Compile Include="Constants.cs" />
     <Compile Include="MetadataInitialization.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

@@ -27,7 +27,9 @@ The code is not yet published as a NuGet package. For now, the following is need
   - Copy the Razor view files from the folder `Views`, to your website project. Edit them or leave them out as appropriate (they are made for the Quicksilver demo site).
 - From the project, `StefanOlsen.Commerce.Payment.Coinify.Manager`:
   - Copy the file, ConfigurePayment.ascx, to your Commerce Manager project. It should be placed in this path `Apps/Order/Payments/Plugins/Coinify` (create the Coinify folder).
-- Copy the methods from the file `CheckoutController.cs`. It is located in the folder `sample` next to the folder `src`. Add the methods to a MVC controller in your own website project (in a Quicksilver project, add it to the file `CheckoutController.cs`).
+- From the folder `sample`, next to the folder `src`:
+  - Copy the methods from the file `CheckoutController.cs`, and add the methods to a MVC controller in your own website project (in a Quicksilver project, add it to the file `CheckoutController.cs`).
+  - Copy the class from the file `CoinifyPaymentOption.cs`, and add it to your own website project (in a Quicksilver project, add it to the folder `Features/Payment/PaymentMethods`).
 
 ### Commerce Manager
 The following settings need to be added in Commerce Manager.
